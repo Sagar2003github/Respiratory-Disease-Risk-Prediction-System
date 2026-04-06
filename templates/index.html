@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Respiratory Disease Risk Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body class="home-page">
+
+    <div class="cursor-glow" id="glow"></div>
+
+    <div class="hero-content">
+        <h1>Respiratory Disease Risk Prediction System</h1>
+        
+        <p>
+            AI-based respiratory health analysis using 
+            <strong>Machine Learning</strong> to support early diagnosis 
+            and preventive healthcare.
+        </p>
+
+        <div class="btn-group">
+            <a href="/signup" class="btn">SIGN UP</a>
+            <a href="/login" class="btn">LOGIN</a>
+        </div>
+    </div>
+
+    <svg class="ecg" viewBox="0 0 1000 200" preserveAspectRatio="none">
+        <polyline
+            fill="none"
+            stroke="#00f7ff"
+            stroke-width="3"
+            points="0,100 100,100 110,80 120,120 130,100 200,100 210,40 220,160 230,100 300,100 310,80 320,120 330,100 500,100 510,40 520,160 530,100 700,100 710,80 720,120 730,100 1000,100"
+        />
+    </svg>
+
+    <script>
+        // Cursor Tracking Script for Neon Glow Effect
+        const glow = document.getElementById('glow');
+        window.addEventListener('mousemove', (e) => {
+            glow.style.setProperty('--x', e.clientX + 'px');
+            glow.style.setProperty('--y', e.clientY + 'px');
+        });
+    </script>
+
+</body>
+</html>

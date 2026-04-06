@@ -1,0 +1,138 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Predict Disease Risk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body class="{{ page_class }}">
+
+<div class="cursor-glow" id="glow"></div>
+
+<div class="container">
+    <h1>Respiratory Risk Prediction</h1>
+
+    <p style="opacity: 0.85;">
+        Enter your symptoms and basic details.<br>
+        The AI system will analyze and predict your respiratory health risk.
+    </p>
+
+    <form method="post">
+        <input 
+            type="text" 
+            id="symptoms"
+            name="symptoms" 
+            placeholder="Enter symptoms (e.g. cough, cold, breathing issue)" 
+            required
+        >
+
+        <button 
+            type="button" 
+            id="voice-btn"
+            class="btn" 
+            onclick="startVoiceInput()"
+            style="margin-bottom: 15px;"
+        >
+            🎤 Click to Speak Symptoms
+        </button>
+
+        <input 
+            type="number" 
+            name="age" 
+            placeholder="Age" 
+            min="1"
+            required
+        >
+
+        <select name="sex" required>
+            <option value="">Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+        </select>
+
+        <button class="btn" type="submit">Predict Risk</button>
+    </form>
+    
+    <div style="margin-top: 20px;">
+        <a href="/dashboard" style="color: var(--primary); text-decoration: none;">← Back to Dashboard</a>
+    </div>
+</div>
+
+<script>
+    // 1. Cursor Glow Tracking Script
+    const glow = document.getElementById('glow');
+    if(glow) {
+        window.addEventListener('mousemove', (e) => {
+            glow.style.setProperty('--x', e.clientX + 'px');
+            glow.style.setProperty('--y', e.clientY + 'px');
+        });
+    }
+
+    // 2. Final Optimized Voice Recognition Logic
+    function startVoiceInput() {
+        const voiceBtn = document.getElementById('voice-btn');
+        const symptomInput = document.getElementById('symptoms');
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            alert("Voice input is not supported in this browser. Please use Google Chrome or Edge.");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        // Start listening
+        recognition.onstart = function () {
+            // Adds the pulse animation from your style.css
+            voiceBtn.classList.add('btn-listening'); 
+            voiceBtn.innerHTML = "🛑 Listening... Speak Now";
+        };
+
+        // Capture Result
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+            symptomInput.value = transcript;
+            
+            // Visual success indicator
+            voiceBtn.innerHTML = "✅ Symptoms Captured!";
+            voiceBtn.style.background = "#1de9b6";
+        };
+
+        // Handle Errors (Crucial for the "no-speech" issue)
+        recognition.onerror = function (event) {
+            console.error("Speech Recognition Error:", event.error);
+            if(event.error === 'no-speech') {
+                alert("No speech was detected. Please try again and speak clearly into the microphone.");
+            } else if(event.error === 'not-allowed') {
+                alert("Microphone access is blocked. Please click the lock icon in the URL bar and allow microphone access.");
+            } else {
+                alert("Error: " + event.error);
+            }
+            stopListening(voiceBtn);
+        };
+
+        // Clean up when recognition ends
+        recognition.onend = function () {
+            // Wait 1.5 seconds so user can see the "Captured" message, then reset
+            setTimeout(() => stopListening(voiceBtn), 1500);
+        };
+
+        function stopListening(btn) {
+            btn.classList.remove('btn-listening');
+            btn.innerHTML = "🎤 Click to Speak Symptoms";
+            btn.style.background = ""; // Returns to CSS default gradient
+        }
+
+        recognition.start();
+    }
+</script>
+
+</body>
+</html>

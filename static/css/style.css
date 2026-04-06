@@ -1,0 +1,203 @@
+/* =============================
+   GLOBAL RESET
+============================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* =============================
+   BODY (GLOBAL DARK THEME & CENTERING)
+============================= */
+body {
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #0f2b33, #020c10 70%);
+    color: #e0f7fa;
+    display: flex; 
+    flex-direction: column;
+    justify-content: center; /* Vertical Center */
+    align-items: center;     /* Horizontal Center */
+    overflow-x: hidden;
+    position: relative;
+    padding: 20px;
+}
+
+/* Fix for Dashboard and Long Pages: Prevents content cut-off */
+body.dashboard-page, body.result-page {
+    justify-content: flex-start; 
+}
+
+/* =============================
+   COMMON CONTAINER (FOR FORMS)
+============================= */
+.container, .hero-content {
+    background: rgba(15, 32, 39, 0.92);
+    padding: 40px;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 0 35px rgba(0, 255, 255, 0.25);
+    margin: 20px auto;
+    animation: fadeIn 1.2s ease-in-out;
+    z-index: 10;
+}
+
+.hero-content {
+    max-width: 800px;
+}
+
+/* =============================
+   HEADINGS & TEXT
+============================= */
+h1 {
+    font-size: 36px;
+    margin-bottom: 15px;
+    color: #00f7ff;
+    text-shadow: 0 0 18px rgba(0,247,255,0.9);
+}
+
+h2 { font-size: 30px; margin-bottom: 10px; }
+h3 { font-size: 22px; margin-bottom: 12px; color: #00f7ff; }
+p { font-size: 16px; color: #b2ebf2; margin-bottom: 20px; }
+
+/* =============================
+   INPUTS & SELECTS
+============================= */
+input, select {
+    width: 100%; 
+    padding: 12px;
+    margin: 12px 0;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    background: #0b1d26;
+    color: #e0f7fa;
+    box-shadow: inset 0 0 10px rgba(0,229,255,0.35);
+    font-size: 15px;
+}
+
+/* =============================
+   IMAGE CLARITY & SIZING FIX
+============================= */
+.disease-image-box {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.disease-img {
+    width: 250px;           /* Fixed size for uniformity */
+    height: 250px;          /* Fixed size for uniformity */
+    object-fit: contain;    /* Prevents stretching/distortion */
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 0 30px rgba(0, 247, 255, 0.4);
+    padding: 10px;
+}
+
+/* =============================
+   BUTTONS
+============================= */
+.btn-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 14px 32px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #000 !important;
+    background: linear-gradient(135deg, #00f7ff, #1de9b6);
+    box-shadow: 0 0 20px rgba(0, 247, 255, 0.75);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 35px rgba(0, 247, 255, 1);
+}
+
+/* =============================
+   DASHBOARD SPECIFIC
+============================= */
+.dashboard-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px;
+    z-index: 5;
+}
+
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+/* =============================
+   FIXED FLOWING ECG ANIMATION
+============================= */
+.ecg {
+    position: fixed;
+    bottom: 10%;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.ecg polyline {
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: ecgFlow 5s linear infinite;
+}
+
+@keyframes ecgFlow {
+    to { stroke-dashoffset: 0; }
+}
+
+/* =============================
+   ANIMATIONS & EFFECTS
+============================= */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cursor-glow {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(0, 247, 255, 0.1) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.btn-listening {
+    background: linear-gradient(135deg, #ff4c4c, #ff0066) !important;
+    animation: pulseMic 1.5s infinite !important;
+    color: white !important;
+}
+
+@keyframes pulseMic {
+    0% { transform: scale(1); box-shadow: 0 0 0 0px rgba(255, 76, 76, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 76, 76, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0px rgba(255, 76, 76, 0); }
+}

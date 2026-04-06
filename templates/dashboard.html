@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Respiratory Health Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #00f7ff;
+            --danger: #ff4c4c;
+            --warning: #ffcf33;
+            --stable: #1de9b6;
+            --bg-dark: #020c10;
+        }
+
+        body.dashboard-page {
+            background: var(--bg-dark);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Cursor Glow Effect */
+        .cursor-glow {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(0, 247, 255, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Improved Gauge Styling */
+        .gauge-container {
+            position: relative;
+            width: 200px;
+            height: 100px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        .gauge-body {
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(from 180deg, var(--stable), var(--warning), var(--danger));
+            mask: radial-gradient(circle, transparent 65%, black 66%);
+            -webkit-mask: radial-gradient(circle, transparent 65%, black 66%);
+            transform: rotate(-90deg);
+        }
+        .gauge-needle {
+            position: absolute;
+            bottom: 0; left: 50%;
+            width: 4px; height: 90px;
+            background: white;
+            transform-origin: bottom center;
+            transition: transform 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            /* Logic: Use current_risk for the live needle position */
+            transform: translateX(-50%) rotate(calc(({{ current_risk }} * 1.8deg) - 90deg));
+        }
+
+        /* Table Styling */
+        .history-section {
+            margin-top: 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(0, 247, 255, 0.1);
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; color: var(--primary); border-bottom: 2px solid #2d3748; padding: 10px; }
+        td { padding: 12px; border-bottom: 1px solid #2d3748; font-size: 0.9rem; }
+        
+        .btn.pulse:hover {
+            box-shadow: 0 0 20px var(--primary);
+            transform: scale(1.05);
+        }
+
+        /* Dynamic Alert Badge Colors */
+        .alert-critical { color: var(--danger); text-shadow: 0 0 10px var(--danger); }
+        .alert-moderate { color: var(--warning); text-shadow: 0 0 10px var(--warning); }
+        .alert-stable { color: var(--stable); text-shadow: 0 0 10px var(--stable); }
+    </style>
+</head>
+<body class="{{ page_class }}">
+
+<div class="cursor-glow" id="glow"></div>
+
+<div class="dashboard-wrapper" style="padding: 40px 5%;">
+    <div class="chatbot-welcome kpi-card" style="margin-bottom: 40px; padding: 25px; border-radius: 15px;">
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <div>
+                🤖 <strong>Hi {{ first_name }}!</strong><br>
+                <span>Monitoring vitals for: <strong style="color:var(--primary)">{{ current_disease }}</strong></span>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn pulse" onclick="speakWelcome()" style="padding: 10px 20px; border-radius: 50px;">🔊 Hear Update</button>
+                <button class="btn" onclick="startListening()" style="padding: 10px 20px; border-radius: 50px; background:var(--primary); color:black;">🎤 Voice Command</button>
+            </div>
+        </div>
+        <p id="speechResult" style="margin-top:15px; font-size:0.8rem; font-weight:bold; color:var(--primary);"></p>
+    </div>
+
+    <div class="kpi-row" style="display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap;">
+        <div class="kpi-card cyan" style="flex: 1; min-width: 200px;">
+            <h4>Total Sessions</h4>
+            <h2 style="font-size: 2.5rem;">{{ total }}</h2>
+        </div>
+        <div class="kpi-card yellow" style="flex: 1; min-width: 200px;">
+            <h4>Average Lifetime Risk</h4>
+            <h2 style="font-size: 2.5rem;">{{ avg }}%</h2>
+        </div>
+        <div class="kpi-card {% if current_risk > 70 %}red{% elif current_risk > 35 %}yellow{% else %}cyan{% endif %}" style="flex: 1; min-width: 200px;">
+            <h4>Current Alert</h4>
+            <h2 style="font-size: 2rem;" class="{% if alert_status == 'CRITICAL' %}alert-critical{% elif alert_status == 'MODERATE' %}alert-moderate{% else %}alert-stable{% endif %}">
+                {{ alert_status }}
+            </h2>
+        </div>
+    </div>
+
+    <div class="analytics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+        <div class="analytics-card" style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 1px solid rgba(0, 247, 255, 0.1);">
+            <h3 style="margin-bottom: 20px;">Live Risk Meter: {{ current_disease }}</h3>
+            <div class="gauge-container">
+                <div class="gauge-body"></div>
+                <div class="gauge-needle"></div>
+            </div>
+            <h2 style="text-align: center; margin-top: 10px; color: var(--primary);">{{ current_risk }}%</h2>
+            <p style="font-size: 0.8rem; opacity: 0.7; text-align: center;">Latest Analysis Probability</p>
+        </div>
+
+        <div class="analytics-card" style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 1px solid rgba(0, 247, 255, 0.1);">
+            <h3>Health Action Plan</h3>
+            <ul style="list-style: none; padding: 0; margin-top: 20px;">
+                {% for tip in tips %}
+                <li style="margin-bottom: 12px; border-left: 3px solid var(--primary); padding-left: 10px;">✅ {{ tip }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <h3>Recent Insights</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Condition</th>
+                    <th>Risk</th>
+                    <th>Symptoms</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in history %}
+                <tr>
+                    <td style="color: var(--primary); font-weight: bold;">{{ row.disease.title() }}</td>
+                    <td style="font-weight:bold;">
+                        <span style="color: {% if row.risk > 70 %}var(--danger){% elif row.risk > 35 %}var(--warning){% else %}var(--stable){% endif %};">
+                            {{ row.risk }}%
+                        </span>
+                    </td>
+                    <td style="font-style: italic; opacity: 0.8;">{{ row.symptoms }}</td>
+                    <td>{{ row.date }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">No clinical records found. Start an analysis.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="dashboard-actions" style="margin-top: 40px; text-align: center;">
+        <a href="/predict" class="btn pulse" style="text-decoration: none; margin-right: 15px;">➕ Start New Analysis</a>
+        <a href="/logout" class="btn secondary" style="text-decoration: none; background: rgba(255, 76, 76, 0.1); border: 1px solid var(--danger); color: var(--danger);">🏠 Exit System</a>
+    </div>
+</div>
+
+<script>
+    // 1. Cursor Track Script
+    const glow = document.getElementById('glow');
+    window.addEventListener('mousemove', (e) => {
+        glow.style.setProperty('--x', e.clientX + 'px');
+        glow.style.setProperty('--y', e.clientY + 'px');
+    });
+
+    // 2. Voice Update (Reading current risk)
+    function speakWelcome() {
+        const text = "Hello {{ first_name }}. Your latest analysis for {{ current_disease }} shows a risk level of {{ current_risk }} percent. Our status is {{ alert_status }}.";
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // 3. Voice Command Script
+    let recognition;
+    function startListening() {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Speech Recognition not supported in this browser. Use Chrome.");
+            return;
+        }
+
+        recognition = new webkitSpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.start();
+
+        recognition.onstart = function () {
+            document.getElementById("speechResult").innerText = "🎙️ Listening for command...";
+        };
+
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript.toLowerCase();
+            document.getElementById("speechResult").innerText = "✅ Command received: " + transcript;
+
+            if (transcript.includes("predict") || transcript.includes("new") || transcript.includes("check")) {
+                window.location.href = "/predict";
+            } else if (transcript.includes("logout") || transcript.includes("exit")) {
+                window.location.href = "/logout";
+            } else if (transcript.includes("update") || transcript.includes("status")) {
+                speakWelcome();
+            } else {
+                alert("Heard: " + transcript + ". Try commands like 'Predict' or 'Update'.");
+            }
+        };
+
+        recognition.onerror = function (event) {
+            document.getElementById("speechResult").innerText = "❌ Error: " + event.error;
+        };
+    }
+</script>
+
+</body>
+</html>

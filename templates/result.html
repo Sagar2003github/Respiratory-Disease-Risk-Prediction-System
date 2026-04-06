@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Respiratory Analysis Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Specific animations for this page */
+        .result-card {
+            animation: fadeIn 0.8s ease-out;
+        }
+        .disease-img {
+            max-width: 180px;
+            height: auto;
+            margin: 20px 0;
+            filter: drop-shadow(0 0 10px var(--primary));
+        }
+        .risk-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="{{ page_class }}">
+
+    <div class="cursor-glow" id="glow"></div>
+
+    <div class="container result-card">
+        
+        <h2 class="welcome-text" style="opacity: 0.8; font-size: 1.2rem;">
+            Hello <span class="username" style="color: var(--primary);">{{ username }}</span> 👋
+        </h2>
+
+        <h1>Respiratory Health Analysis</h1>
+
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+        <div class="disease-section">
+            <h3 style="text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px;">Predicted Condition</h3>
+            <h2 class="disease-name" style="font-size: 2.2rem; color: var(--primary);">{{ disease }}</h2>
+
+            <img 
+                src="{{ url_for('static', filename='images/' + image) }}" 
+                alt="{{ disease }}"
+                class="disease-img"
+            >
+
+            <p class="description" style="font-style: italic; color: #b2ebf2; padding: 0 20px;">
+                {{ description }}
+            </p>
+        </div>
+
+        <div class="risk-section" style="margin-top: 40px;">
+            <h3 style="text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px;">Risk Assessment</h3>
+            
+            <div class="gauge">
+                <div class="gauge-fill" style="transform: rotate({{ risk * 1.8 }}deg);"></div>
+                <div class="gauge-cover">
+                    <span class="risk-value">{{ risk }}%</span>
+                </div>
+            </div>
+
+            <p class="advice" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 10px;">
+                <strong style="color: var(--warning);">Medical Advice:</strong><br>
+                {{ advice }}
+            </p>
+        </div>
+
+        <div class="actions" style="margin-top: 40px; display: flex; gap: 15px; justify-content: center;">
+            <a href="/predict" class="btn">Predict Again</a>
+            <a href="/dashboard" class="btn" style="background: transparent; border: 1px solid var(--primary); color: var(--primary);">Dashboard</a>
+        </div>
+
+    </div>
+
+    <script>
+        // Cursor Glow Tracking
+        const glow = document.getElementById('glow');
+        window.addEventListener('mousemove', (e) => {
+            glow.style.setProperty('--x', e.clientX + 'px');
+            glow.style.setProperty('--y', e.clientY + 'px');
+        });
+
+        // Optional: Voice notification of result
+        window.onload = function() {
+            const msg = new SpeechSynthesisUtterance("Analysis complete. Predicted condition is {{ disease }}. Your risk level is {{ risk }} percent.");
+            window.speechSynthesis.speak(msg);
+        };
+    </script>
+
+</body>
+</html>
