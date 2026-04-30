@@ -48,7 +48,7 @@ Optimized using preprocessing techniques
 # Home Page
 <img width="1920" height="1080" alt="Screenshot (222)" src="https://github.com/user-attachments/assets/3693093f-8bca-49b7-bdbf-d4a59d5be9ac" />
 
-# Create Page
+# Account Creation Page
 <img width="1920" height="1080" alt="Screenshot (223)" src="https://github.com/user-attachments/assets/223dbc56-fae8-4588-baae-5407a058d319" />
 
 # Prediction Page
